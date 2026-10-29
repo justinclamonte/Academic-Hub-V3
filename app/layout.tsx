@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { ClerkProvider, Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
 import './globals.css'
+
+export const metadata: Metadata = {
+  title: 'Academic Hub',
+  description: 'Learn together. Ask questions, share advice, and improve as a community.',
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -2,63 +2,11 @@
 
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { supabase } from '@/lib/supabase'
+import { awardExp } from '@/lib/exp'
+import { getBlockMessage } from '@/lib/sanctions'
 import type { ActionResult, Choice, Feed, FeedQuestion } from '@/lib/types'
 
 const SUBJECTS = ['Mathematics', 'Science', 'English', 'Study Advice', 'Other']
-
-const REWARDS = {
-  question: { amount: 5, limit: 3, field: 'daily_questions' },
-  reply: { amount: 5, limit: 5, field: 'daily_replies' },
-} as const
-
-type Profile = {
-  user_id: string
-  exp: number
-  daily_date: string | null
-  daily_questions: number
-  daily_replies: number
-  daily_votes: number
-  daily_helpful: number
-}
-
-async function awardExp(userId: string, action: keyof typeof REWARDS) {
-  const reward = REWARDS[action]
-  const today = new Date().toISOString().slice(0, 10)
-
-  const { data } = await supabase
-    .from('hub_profiles')
-    .select('*')
-    .eq('user_id', userId)
-    .maybeSingle()
-
-  const profile: Profile = data ?? {
-    user_id: userId,
-    exp: 0,
-    daily_date: today,
-    daily_questions: 0,
-    daily_replies: 0,
-    daily_votes: 0,
-    daily_helpful: 0,
-  }
-
-  if (profile.daily_date !== today) {
-    profile.daily_date = today
-    profile.daily_questions = 0
-    profile.daily_replies = 0
-    profile.daily_votes = 0
-    profile.daily_helpful = 0
-  }
-
-  if (profile[reward.field] >= reward.limit) {
-    await supabase.from('hub_profiles').upsert(profile)
-    return 0
-  }
-
-  profile[reward.field] += 1
-  profile.exp += reward.amount
-  await supabase.from('hub_profiles').upsert(profile)
-  return reward.amount
-}
 
 async function displayName() {
   const user = await currentUser()
@@ -68,8 +16,14 @@ async function displayName() {
 export async function getFeed(): Promise<Feed> {
   const { userId } = await auth()
 
+  // Everyone sees approved questions. Authors also see their own pending/rejected ones.
+  const baseQuery = supabase.from('hub_questions').select('*').order('created_at', { ascending: false })
+  const questionQuery = userId
+    ? baseQuery.or(`status.eq.approved,author_id.eq.${userId}`)
+    : baseQuery.eq('status', 'approved')
+
   const [q, r, v] = await Promise.all([
-    supabase.from('hub_questions').select('*').order('created_at', { ascending: false }),
+    questionQuery,
     supabase.from('hub_replies').select('*').order('created_at', { ascending: true }),
     supabase.from('hub_votes').select('user_id, target_type, target_id, choice'),
   ])
@@ -98,6 +52,7 @@ export async function getFeed(): Promise<Feed> {
     details: row.details,
     author: row.author_name || 'Student',
     date: row.created_at,
+    status: row.status as FeedQuestion['status'],
     isOwner: !!userId && row.author_id === userId,
     ...votesFor('question', row.id),
     replies: r.data
@@ -132,6 +87,9 @@ export async function postQuestion(input: {
   const { userId } = await auth()
   if (!userId) return { ok: false, message: 'Please sign in to post a question.' }
 
+  const blocked = await getBlockMessage(userId)
+  if (blocked) return { ok: false, message: blocked }
+
   const title = input.title.trim().slice(0, 200)
   const details = input.details.trim().slice(0, 5000)
   if (!title || !details || !SUBJECTS.includes(input.subject)) {
@@ -144,13 +102,17 @@ export async function postQuestion(input: {
     title,
     subject: input.subject,
     details,
+    status: 'pending',
   })
   if (error) {
     console.error('postQuestion error:', error)
     return { ok: false, message: 'Your question could not be saved. Please try again.' }
   }
 
-  return { ok: true, earned: await awardExp(userId, 'question') }
+  return {
+    ok: true,
+    message: 'Thanks! Your question was sent for review and will appear once an admin approves it.',
+  }
 }
 
 export async function postReply(input: {
@@ -159,6 +121,9 @@ export async function postReply(input: {
 }): Promise<ActionResult> {
   const { userId } = await auth()
   if (!userId) return { ok: false, message: 'Please sign in to reply.' }
+
+  const blocked = await getBlockMessage(userId)
+  if (blocked) return { ok: false, message: blocked }
 
   const body = input.body.trim().slice(0, 1000)
   if (!body) return { ok: false, message: 'Please write a reply first.' }
@@ -184,6 +149,9 @@ export async function vote(input: {
 }): Promise<ActionResult> {
   const { userId } = await auth()
   if (!userId) return { ok: false, message: 'Please sign in to vote.' }
+
+  const blocked = await getBlockMessage(userId)
+  if (blocked) return { ok: false, message: blocked }
 
   const { data: existing, error: readError } = await supabase
     .from('hub_votes')

@@ -26,7 +26,8 @@ function handleResult(result: ActionResult) {
     alert(result.message ?? 'Something went wrong.')
     return false
   }
-  if (result.earned === 0) alert('Daily EXP limit reached. Try again tomorrow!')
+  if (result.message) alert(result.message)
+  else if (result.earned === 0) alert('Daily EXP limit reached. Try again tomorrow!')
   else if (result.earned) alert('+' + result.earned + ' EXP earned!')
   return true
 }

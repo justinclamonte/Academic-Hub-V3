@@ -11,6 +11,7 @@ export type FeedReply = {
 }
 
 export type FeedQuestion = {
+    status: 'pending' | 'approved' | 'rejected'
   id: string
   title: string
   subject: string

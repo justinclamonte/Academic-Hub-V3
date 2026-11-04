@@ -1230,5 +1230,23 @@ form:not(.reply-form) button[type="submit"]:hover {
     color: #7f1d1d;
 }
 
+.site-footer {
+  text-align: center;
+  padding: 24px 16px;
+  border-top: 1px solid #8884;
+}
 
+.footer-credits ul {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 16px;
+}
+
+.footer-credits li {
+  margin: 4px 0;
+}
+
+.site-footer a {
+  text-decoration: underline;
+}
 

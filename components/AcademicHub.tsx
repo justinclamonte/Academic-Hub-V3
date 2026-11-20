@@ -7,7 +7,6 @@ import { deleteQuestion, getFeed, postQuestion, postReply, vote } from '@/app/ac
 import type { ActionResult, Choice, Feed, FeedQuestion } from '@/lib/types'
 import { getShop } from '@/app/shop'
 import { AVATARS } from '@/lib/avatars'
-import AvatarShop from '@/components/AvatarShop'
 import type { ShopState } from '@/lib/types'
 
 const SUBJECTS = ['Mathematics', 'Science', 'English', 'Study Advice', 'Other']
@@ -335,8 +334,6 @@ export default function AcademicHub() {
           </article>
         </div>
       </section>
-
-            <AvatarShop shop={shop} signedIn={!!isSignedIn} onChanged={refresh} />
 
       {/* QUESTIONS */}
       <section id="questions" className="questions">

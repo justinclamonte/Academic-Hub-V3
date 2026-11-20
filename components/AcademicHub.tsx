@@ -254,7 +254,7 @@ export default function AcademicHub() {
         <div className="profile-info">
           <div className="avatar-frame">
             <div id="player-avatar" className="player-avatar">
-              {current.avatar}
+              {equippedEmoji}
             </div>
             <span className="avatar-status">ACTIVE</span>
           </div>

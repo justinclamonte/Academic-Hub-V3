@@ -5,6 +5,10 @@ import type { FormEvent } from 'react'
 import { SignInButton, useUser } from '@clerk/nextjs'
 import { deleteQuestion, getFeed, postQuestion, postReply, vote } from '@/app/actions'
 import type { ActionResult, Choice, Feed, FeedQuestion } from '@/lib/types'
+import { getShop } from '@/app/shop'
+import { AVATARS } from '@/lib/avatars'
+import AvatarShop from '@/components/AvatarShop'
+import type { ShopState } from '@/lib/types'
 
 const SUBJECTS = ['Mathematics', 'Science', 'English', 'Study Advice', 'Other']
 
@@ -173,11 +177,18 @@ export default function AcademicHub() {
   const [subject, setSubject] = useState('')
   const [details, setDetails] = useState('')
   const [posting, setPosting] = useState(false)
+  const [shop, setShop] = useState<ShopState>({ coins: 0, owned: [], equipped: null })
 
-  const refresh = useCallback(async () => {
-    const data = await getFeed()
-    setFeed(data)
-    setLoading(false)
+    const refresh = useCallback(async () => {
+    try {
+      const [data, shopState] = await Promise.all([getFeed(), getShop()])
+      setFeed(data)
+      setShop(shopState)
+    } catch (error) {
+      console.error('Could not refresh:', error)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -227,6 +238,7 @@ export default function AcademicHub() {
   const earned = next ? exp - current.exp : exp
   const needed = next ? next.exp - current.exp : exp
   const percent = next ? Math.min(100, (earned / needed) * 100) : 100
+  const equippedEmoji = AVATARS.find((a) => a.id === shop.equipped)?.emoji ?? current.avatar
 
   return (
     <main>
@@ -257,6 +269,7 @@ export default function AcademicHub() {
             <p id="player-exp" className="total-exp">
               {exp} EXP
             </p>
+           <p className="total-exp">🪙 {shop.coins} coins</p>
           </div>
         </div>
 
@@ -322,6 +335,8 @@ export default function AcademicHub() {
           </article>
         </div>
       </section>
+
+            <AvatarShop shop={shop} signedIn={!!isSignedIn} onChanged={refresh} />
 
       {/* QUESTIONS */}
       <section id="questions" className="questions">

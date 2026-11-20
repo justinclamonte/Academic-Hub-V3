@@ -8,6 +8,8 @@ const REWARDS = {
 type Profile = {
   user_id: string
   exp: number
+  coins: number
+  avatar_id: string | null
   daily_date: string | null
   daily_questions: number
   daily_replies: number
@@ -28,6 +30,8 @@ export async function awardExp(userId: string, action: keyof typeof REWARDS) {
   const profile: Profile = data ?? {
     user_id: userId,
     exp: 0,
+    coins: 0,
+    avatar_id: null,
     daily_date: today,
     daily_questions: 0,
     daily_replies: 0,
@@ -50,6 +54,7 @@ export async function awardExp(userId: string, action: keyof typeof REWARDS) {
 
   profile[reward.field] += 1
   profile.exp += reward.amount
+  profile.coins += reward.amount
   await supabase.from('hub_profiles').upsert(profile)
   return reward.amount
 }

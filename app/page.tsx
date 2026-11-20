@@ -9,6 +9,7 @@ export default function Home() {
           <a href="#home">Home</a>
           <a href="#subjects">Subjects</a>
           <a href="#questions">Questions</a>
+          <a href="#shop">Shop</a>
         </nav>
       </header>
 

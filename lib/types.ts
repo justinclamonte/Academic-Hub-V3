@@ -28,3 +28,4 @@ export type FeedQuestion = {
 export type Feed = { questions: FeedQuestion[]; exp: number }
 
 export type ActionResult = { ok: boolean; message?: string; earned?: number }
+export type ShopState = { coins: number; owned: string[]; equipped: string | null }

@@ -30,3 +30,18 @@ export type Feed = { questions: FeedQuestion[]; exp: number }
 
 export type ActionResult = { ok: boolean; message?: string; earned?: number }
 export type ShopState = { coins: number; owned: string[]; equipped: string | null }
+
+export type DashboardData = {
+  signedIn: boolean
+  name: string
+  email: string
+  imageUrl: string
+  joined: string
+  exp: number
+  coins: number
+  avatarId: string | null
+  avatarsOwned: number
+  totals: { questions: number; replies: number; verified: number }
+  questions: { id: string; title: string; subject: string; status: string; date: string; replies: number }[]
+  replies: { id: string; body: string; date: string; questionTitle: string; verified: boolean }[]
+}

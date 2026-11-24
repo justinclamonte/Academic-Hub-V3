@@ -61,6 +61,7 @@ export async function getFeed(): Promise<Feed> {
         id: rep.id,
         text: rep.body,
         author: rep.author_name || 'Student',
+       verified: rep.verified ?? false,
         date: rep.created_at,
         ...votesFor('reply', rep.id),
       })),

@@ -43,7 +43,7 @@ export async function getAdminData(): Promise<AdminData> {
     await Promise.all([
       supabase.from('hub_questions').select(QUESTION_COLUMNS).eq('status', 'pending').order('created_at', { ascending: true }),
       supabase.from('hub_questions').select(QUESTION_COLUMNS).neq('status', 'pending').order('created_at', { ascending: false }).limit(200),
-      supabase.from('hub_replies').select('id, body, author_id, author_name, created_at, question_id').order('created_at', { ascending: false }).limit(200),
+      supabase.from('hub_replies').select('id, body, author_id, author_name, created_at, question_id, verified').order('created_at', { ascending: false }).limit(200),
       supabase.from('hub_sanctions').select('*').order('created_at', { ascending: false }),
       supabase.from('hub_questions').select('*', { count: 'exact', head: true }).eq('status', 'pending').then((res) => res.count ?? 0),
       count('hub_questions'),
@@ -73,6 +73,7 @@ export async function getAdminData(): Promise<AdminData> {
       authorId: row.author_id,
       date: row.created_at,
       questionTitle: titles.get(row.question_id) ?? '(older question)',
+      verified: row.verified ?? false,
     })),
     sanctions: sanctions.data.map((row) => ({
       userId: row.user_id,
@@ -203,6 +204,33 @@ export async function adminLiftSanction(userId: string): Promise<ActionResult> {
   if (error) {
     console.error('adminLiftSanction error:', error)
     return { ok: false, message: 'Could not lift this action.' }
+  }
+  return { ok: true }
+}
+export async function adminVerifyReply(id: string): Promise<ActionResult> {
+  if (!(await isAdmin())) return { ok: false, message: 'Not authorized.' }
+
+  // Mark it verified first, so a double click can never pay twice.
+  const { data, error } = await supabase
+    .from('hub_replies')
+    .update({ verified: true, verified_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('verified', false)
+    .select('author_id')
+  if (error) {
+    console.error('adminVerifyReply error:', error)
+    return { ok: false, message: 'Could not verify this reply.' }
+  }
+  if (!data || data.length === 0) return { ok: false, message: 'This reply is already verified.' }
+
+  const { error: coinError } = await supabase.rpc('add_coins', {
+    p_user: data[0].author_id,
+    p_amount: 10,
+  })
+  if (coinError) {
+    console.error('adminVerifyReply coin error:', coinError)
+    await supabase.from('hub_replies').update({ verified: false, verified_at: null }).eq('id', id)
+    return { ok: false, message: 'Could not add the coins. Please try again.' }
   }
   return { ok: true }
 }

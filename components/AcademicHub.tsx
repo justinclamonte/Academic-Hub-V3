@@ -155,6 +155,7 @@ function QuestionCard(props: { q: FeedQuestion; onChanged: () => void }) {
                 mine={reply.mine}
                 onVote={(choice) => castVote('reply', reply.id, choice)}
               />
+              {reply.verified && <p className="ai-check">✅ Verified by an admin · 🪙 +10 bonus</p>}
             </div>
           ))
         )}

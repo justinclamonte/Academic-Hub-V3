@@ -8,6 +8,7 @@ export type FeedReply = {
   up: number
   down: number
   mine: Choice | null
+  verified: boolean
 }
 
 export type FeedQuestion = {

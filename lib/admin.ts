@@ -18,6 +18,7 @@ export type AdminReply = {
   authorId: string
   date: string
   questionTitle: string
+  verified: boolean
 }
 
 export type AdminSanction = {

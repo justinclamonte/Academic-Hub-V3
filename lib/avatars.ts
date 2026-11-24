@@ -12,5 +12,13 @@ export const AVATARS: Avatar[] = [
   { id: 'diamond', emoji: '💎', name: '-LEGEND- Hidden Gemstone', price: 388 },
   { id: 'free', emoji: '🆓', name: '-GIFTS- Free Box', price: 0 },
   { id: 'laptop', emoji: '💻', name: '-ELITES- IT Specialist', price: 188 },
+  { id: 'cool', emoji: '😎', name: '-ELITES- Cool Boi', price: 188 },
   { id: 'hearts', emoji: '💕', name: 'I Love YOU!', price: 88 },
+  { id: 'fire', emoji: '🔥', name: 'Im ALL FIRED UP!', price: 88 },
+  { id: 'check', emoji: '✅', name: 'Item: CHECK!', price: 48 },
+  { id: 'trophy', emoji: '🏆', name: '-LEGEND- True Champion', price: 388 },
+  { id: 'upside', emoji: '🙃', name: 'Gone The Other Way', price: 48 },
+  { id: 'tired', emoji: '🥱', name: 'Bedtime!', price: 48 },
+  { id: 'distorted', emoji: '🫪', name: 'WHAAAAAAA!', price: 88 },
+  { id: 'graduate', emoji: '🧑‍🎓', name: '-SPECIAL- Finished School, LEZGO!', price: 288 },
 ]

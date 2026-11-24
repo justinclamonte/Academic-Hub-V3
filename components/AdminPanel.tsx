@@ -9,6 +9,7 @@ import {
   adminLiftSanction,
   adminReview,
   adminSanction,
+  adminVerifyReply,
   getAdminData,
   getAdminUsers,
 } from '@/app/admin/actions'
@@ -283,6 +284,15 @@ export default function AdminPanel() {
                   <td style={cell}>{r.author}</td>
                   <td style={cell}>{new Date(r.date).toLocaleString()}</td>
                   <td style={cell}>
+                    {r.verified ? (
+                      <span>✅ Verified </span>
+                    ) : (
+                      <>
+                        <button type="button" onClick={() => act(adminVerifyReply(r.id))}>
+                          ✅ Verify (+10 coins)
+                        </button>{' '}
+                      </>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
